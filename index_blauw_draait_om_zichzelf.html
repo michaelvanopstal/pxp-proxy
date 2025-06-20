@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blauw Blok Draait Horizontaal</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="200" height="200"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let blockPixels = [];
+let tick = 0;
+let mode = "spin";
+
+function drawPixels(pixels, transformFn = null) {
+  for (let p of pixels) {
+    let x = p.x;
+    let y = p.y;
+    if (transformFn) {
+      [x, y] = transformFn(x, y);
+    }
+    ctx.fillStyle = p.color;
+    ctx.fillRect(x, y, 1.5, 1.5);
+  }
+}
+
+fetch("blauw_draai_om_zichzelf.json")
+  .then(res => res.json())
+  .then(data => {
+    blockPixels = data;
+    requestAnimationFrame(animate);
+  });
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (mode === "spin") {
+    const angle = Math.sin(tick / 30 * Math.PI) * Math.PI;
+    ctx.save();
+    ctx.translate(100, 100);
+    ctx.transform(1, 0, 0, Math.cos(angle), 0, 0); // horizontaal (X-as)
+    drawPixels(blockPixels, (x, y) => [x - 50, y - 50]);
+    ctx.restore();
+
+    tick++;
+    if (tick > 90) {
+      tick = 0;
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>
