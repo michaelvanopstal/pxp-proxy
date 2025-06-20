@@ -4,103 +4,84 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PointPay Logo Animation</title>
+  <title>PointPay Animation Loop</title>
   <style>
     body {
-      background-color: #000;
       margin: 0;
-      overflow: hidden;
-    }
-    #scene {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
+      background: #000;
       display: flex;
-      align-items: center;
       justify-content: center;
-      perspective: 1000px;
+      align-items: center;
+      height: 100vh;
     }
-    .logo-wrapper {
+    .container {
       position: relative;
-      width: 200px;
-      height: 200px;
+      width: 300px;
+      height: 300px;
     }
-    .P {
+    .layer {
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      background: url('pointpay-logo-p.png') no-repeat center/contain;
-      transform: translateZ(0);
-      transition: transform 1s ease-in-out;
-      z-index: 3;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
     }
     .bg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: url('pointpay-logo-bg.png') no-repeat center/contain;
+      background-image: url('poinpay_33333.png');
+      z-index: 1;
+    }
+    .cracks {
+      background-image: url('scheuren.png');
+      opacity: 0;
+      transition: opacity 1s;
       z-index: 2;
     }
-    .shard {
-      position: absolute;
-      width: 50%;
-      height: 50%;
-      background-color: #2196f3;
-      opacity: 0;
-      transition: transform 0.5s ease-in-out;
-      z-index: 1;
+    .p {
+      background-image: url('wite_wite_wite.png');
+      z-index: 3;
+      transform-origin: center;
+      transition: transform 1s ease-in-out;
     }
   </style>
 </head>
 <body>
-  <div id="scene">
-    <div class="logo-wrapper">
-      <div class="P" id="P"></div>
-      <div class="bg" id="bg"></div>
-      <div class="shard" id="shard1" style="top: 0; left: 0;"></div>
-      <div class="shard" id="shard2" style="top: 0; left: 50%;"></div>
-      <div class="shard" id="shard3" style="top: 50%; left: 0;"></div>
-      <div class="shard" id="shard4" style="top: 50%; left: 50%;"></div>
-    </div>
+  <div class="container">
+    <div class="layer bg"></div>
+    <div class="layer cracks" id="cracks"></div>
+    <div class="layer p" id="pLayer"></div>
   </div>
 
   <script>
-    function animateLogo() {
-      const P = document.getElementById('P');
-      const shards = [
-        document.getElementById('shard1'),
-        document.getElementById('shard2'),
-        document.getElementById('shard3'),
-        document.getElementById('shard4')
-      ];
+    const cracks = document.getElementById('cracks');
+    const p = document.getElementById('pLayer');
 
-      P.style.transform = 'translateZ(100px)';
+    let loop = () => {
+      // Toon scheuren
+      cracks.style.opacity = 1;
 
+      // Draai P
       setTimeout(() => {
-        shards.forEach((shard, i) => {
-          shard.style.opacity = '1';
-          shard.style.transform = `translate(${(i % 2 === 0 ? -1 : 1) * 20}px, ${(i < 2 ? -1 : 1) * 20}px)`;
-        });
+        p.style.transform = 'rotateY(1080deg)';
       }, 1000);
 
+      // Verberg scheuren
       setTimeout(() => {
-        P.style.transition = 'transform 0.3s linear';
-        P.style.transform = 'translateZ(100px) rotateY(1080deg)';
-      }, 1600);
+        cracks.style.opacity = 0;
+      }, 3000);
 
+      // Reset rotatie
       setTimeout(() => {
-        P.style.transition = 'transform 1s ease-in-out';
-        P.style.transform = 'translateZ(0)';
-        shards.forEach((shard) => {
-          shard.style.transform = 'translate(0, 0)';
-          shard.style.opacity = '0';
-        });
-      }, 2500);
+        p.style.transform = 'rotateY(0deg)';
+      }, 4000);
 
-      setTimeout(animateLogo, 5000);
-    }
+      // Herstart loop
+      setTimeout(loop, 5000);
+    };
 
-    window.onload = animateLogo;
+    loop();
   </script>
 </body>
 </html>
