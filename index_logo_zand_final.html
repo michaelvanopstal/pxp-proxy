@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zand animatie logo</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="200" height="200"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let particles = [];
+let originalPositions = [];
+let mode = "drop"; // drop -> rise -> spin -> pause
+let frame = 0;
+let tick = 0;
+
+fetch('zand_logo_latest.json')
+  .then(res => res.json())
+  .then(data => {
+    for (let i = 0; i < data.length; i++) {
+      const px = data[i];
+      let x = px.x + 50;
+      let y = px.y + 50;
+      particles.push({
+        x: x,
+        y: y,
+        baseX: x,
+        baseY: y,
+        color: px.color,
+        vy: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.5
+      });
+      originalPositions.push({ x: x, y: y });
+    }
+    requestAnimationFrame(animate);
+  });
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (mode === "drop") {
+    for (let p of particles) {
+      p.y += p.vy;
+      p.x += p.vx;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, 1.5, 1.5);
+    }
+    frame++;
+    if (frame > 80) {
+      mode = "rise";
+      frame = 0;
+    }
+  } else if (mode === "rise") {
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const target = originalPositions[i];
+      p.x += (target.x - p.x) * 0.1;
+      p.y += (target.y - p.y) * 0.1;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, 1.5, 1.5);
+    }
+    frame++;
+    if (frame > 60) {
+      mode = "spin";
+      frame = 0;
+    }
+  } else if (mode === "spin") {
+    let angle = (tick / 100) * Math.PI * 2;
+    ctx.save();
+    ctx.translate(100, 100);
+    ctx.rotate(angle);
+    for (let p of particles) {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.baseX - 100, p.baseY - 100, 1.5, 1.5);
+    }
+    ctx.restore();
+    tick++;
+    if (tick > 300) {
+      tick = 0;
+      mode = "pause";
+      frame = 0;
+    }
+  } else if (mode === "pause") {
+    for (let p of particles) {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.baseX, p.baseY, 1.5, 1.5);
+    }
+    frame++;
+    if (frame > 90) {
+      mode = "drop";
+      frame = 0;
+      for (let p of particles) {
+        p.x = 100;
+        p.y = 70;
+      }
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>
