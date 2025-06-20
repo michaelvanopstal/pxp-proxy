@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alleen Blauwe Vlak Draait</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="200" height="200"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let bgPixels = [];
+let pPixels = [];
+let tick = 0;
+let mode = "spin"; // spin -> pause
+
+function drawPixels(particles, transformFn = null) {
+  for (let p of particles) {
+    let x = p.x;
+    let y = p.y;
+    if (transformFn) {
+      [x, y] = transformFn(x, y);
+    }
+    ctx.fillStyle = p.color;
+    ctx.fillRect(x, y, 1.5, 1.5);
+  }
+}
+
+Promise.all([
+  fetch('blue_block_pixels.json').then(res => res.json()),
+  fetch('p_static_pixels.json').then(res => res.json())
+]).then(([bgData, pData]) => {
+  bgPixels = bgData;
+  pPixels = pData;
+  requestAnimationFrame(animate);
+});
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // transformeer enkel blauwe blok als in rotatie
+  if (mode === "spin") {
+    let angle = Math.sin(tick / 20 * Math.PI) * Math.PI;
+    ctx.save();
+    ctx.translate(100, 100);
+    ctx.scale(1, Math.cos(angle));
+    drawPixels(bgPixels, (x, y) => [x - 50, y - 50]);
+    ctx.restore();
+
+    drawPixels(pPixels); // P blijft gewoon op plek
+    tick++;
+    if (tick > 60) {
+      mode = "pause";
+      tick = 0;
+    }
+  } else if (mode === "pause") {
+    drawPixels(bgPixels);
+    drawPixels(pPixels);
+    tick++;
+    if (tick > 90) {
+      mode = "spin";
+      tick = 0;
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>
